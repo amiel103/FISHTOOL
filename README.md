@@ -1,8 +1,6 @@
 # FISHTOOL
 
 
-Perfect! Let's craft a professional, concise, and friendly README for FISHTOOL (FastAPI Interactive Shell Tool). I’ll include sections like project description, features, installation, usage, and examples.
-
 🐟 FISHTOOL
 
 FastAPI Interactive Shell Tool — a developer-friendly CLI tool to quickly scaffold, manage, and inspect FastAPI projects. FISHTOOL automates model and router creation, registers routes in main.py, and lets you list all endpoints in your project — all from the terminal.
@@ -20,9 +18,8 @@ Endpoint listing: List all registered routes with HTTP method and path.
 Interactive CLI: All actions are available through an easy-to-use command-line interface.
 
 📦 Installation
-git clone https://github.com/yourusername/fishtool.git
+git clone https://github.com/amiel103/fishtool.git
 cd fishtool
-pip install -r requirements.txt  # if dependencies are required
 
 
 Optionally, you can make fishtool globally accessible:
@@ -104,4 +101,4 @@ Interactive REPL for testing endpoints directly.
 
 📜 License
 
-MIT License © 2025 Your Name
+MIT License © 2025 Amiel Ryan James M. Nayve
