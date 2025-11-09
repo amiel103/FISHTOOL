@@ -26,22 +26,26 @@ cd fishtool
 
 ## ⚡ Usage
 Create a new FastAPI project
-python fishtool.py new my_project
+```bash
+python fishtool.py new
+```
 
 
 This will generate a project structure like:
 
-my_project/<br>
-├─ app/ <br>
-│  ├─ main.py <br>
-│  ├─ database.py <br>
-│  ├─ dependencies.py <br>
-│  ├─ routers/ <br>
-│  ├─ models/ <br>
-│  └─ internal/ <br>
+
+app/ <br>
+├─ main.py <br>
+├─ database.py <br>
+├─ dependencies.py <br>
+├─ routers/ <br>
+├─ models/ <br>
+└─ internal/ <br>
 
 ## Create a new model and router
+```bash
 python fishtool.py makemodel users
+```
 
 
 Creates app/models/users.py with a SQLModel class.
@@ -51,7 +55,9 @@ Creates app/routers/users.py with CRUD endpoints.
 Registers the router in main.py.
 
 ##  List all registered endpoints
+```bash
 python fishtool.py list
+```
 
 
 Example output:
@@ -72,8 +78,9 @@ Total: 5 endpoints
 
 Use Uvicorn to run the app from the project root:
 
+```bash
 uvicorn app.main:app --reload
-
+```
 
 Avoid running python app/main.py directly — FISHTOOL ensures imports work properly when run from the project root.
 
