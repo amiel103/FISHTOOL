@@ -9,11 +9,10 @@ from textwrap import shorten
 # Project Template Definition
 # ------------------------------
 
-STRUCTURE = {
-    "app": {
-        "__init__.py": "",
-        "main.py":
-'''from fastapi import FastAPI
+
+
+MAIN_TEMPLATE = '''
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.database import create_db_and_tables, engine
 
@@ -29,14 +28,12 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
-    return {"message": "HELLO HUMAN"}
+    return {"message": "HELLO HUMAN, IM A FISH"}
 
-''',
+'''
 
-        "dependencies.py": "# Dependency definitions\n",
 
-        "database.py":
-'''from sqlmodel import SQLModel, create_engine
+DATABASE_TEMPLATE = '''from sqlmodel import SQLModel, create_engine
 
 sqlite_file_name = "app//database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -46,8 +43,95 @@ engine = create_engine(sqlite_url)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-''',
+'''
 
+def MODEL_TEMPLATE(model_name): 
+    MODEL_TEMPLATE = f'''
+from sqlmodel import Field, SQLModel
+
+
+class {model_name}(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    '''
+
+    return MODEL_TEMPLATE
+
+
+def ROUTER_TEMPLATE(router_name): 
+
+    ROUTER_TEMPLATE = f'''
+from fastapi import APIRouter, HTTPException
+from app.models.{router_name} import {router_name}
+from sqlmodel import Session, select
+router = APIRouter(prefix="/{router_name}", tags=["{router_name}"])
+from ..database import engine
+
+@router.get("/", summary="Get all {router_name}")
+async def get_all():
+    with Session(engine) as session:
+        statement = select({router_name})
+        results = session.exec(statement)
+
+        return {{"message": results.all()}}
+
+
+@router.post("/", summary="Create a new {router_name}")
+async def create_item(_{router_name} : {router_name}):
+    with Session(engine) as session:
+        session.add(_{router_name})
+        session.commit()
+        session.refresh(_{router_name})
+        return _{router_name}
+
+
+@router.get("/{{item_id}}", summary="Get {router_name} by ID")
+async def get_item(item_id: int):
+    with Session(engine) as session:
+        item = session.get({router_name}, item_id)
+        return item
+
+
+@router.put("/{{item_id}}", summary="Update {router_name}")
+async def update_item(_{router_name} : {router_name} , item_id: int):
+    with Session(engine) as session:
+
+        item = session.get({router_name}, item_id)
+        for key, value in _{router_name}.model_dump(exclude_unset=True).items():
+            setattr(item, key, value)
+
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
+
+
+@router.delete("/{{item_id}}", summary="Delete {router_name}")
+async def delete_item(item_id: int):
+
+    print(item_id)
+
+    with Session(engine) as session:
+        item = session.get({router_name}, item_id)
+
+        session.delete(item)
+        session.commit()
+        return "deleted"
+
+'''
+
+
+
+    return ROUTER_TEMPLATE
+
+
+
+
+STRUCTURE = {
+    "app": {
+        "__init__.py": "",
+        "main.py":MAIN_TEMPLATE,
+        "dependencies.py": "# Dependency definitions\n",
+        "database.py": DATABASE_TEMPLATE,
         "routers": {"__init__.py": ""},
         "models": {"__init__.py": ""},
         "internal": {
@@ -107,36 +191,7 @@ def create_router(router_name: str, force: bool = False) -> None:
         log(f"Router '{router_name}' already exists. Use --force to overwrite.", "warning")
         return
 
-    template = f'''from fastapi import APIRouter, HTTPException
-from app.models import {router_name}
-
-router = APIRouter(prefix="/{router_name}", tags=["{router_name}"])
-
-
-@router.get("/", summary="Get all {router_name}")
-async def get_all():
-    return {{"message": "Get all {router_name}"}}
-
-
-@router.post("/", summary="Create a new {router_name}")
-async def create_item():
-    return {{"message": "Create {router_name}"}}
-
-
-@router.get("/{{item_id}}", summary="Get {router_name} by ID")
-async def get_item(item_id: int):
-    return {{"message": f"Get {router_name} {{item_id}}"}}
-
-
-@router.put("/{{item_id}}", summary="Update {router_name}")
-async def update_item(item_id: int):
-    return {{"message": f"Update {router_name} {{item_id}}"}}
-
-
-@router.delete("/{{item_id}}", summary="Delete {router_name}")
-async def delete_item(item_id: int):
-    return {{"message": f"Delete {router_name} {{item_id}}"}}
-'''
+    template = ROUTER_TEMPLATE(router_name)
 
     router_path.write_text(template.strip() + "\n", encoding="utf-8")
     log(f"Created router: {router_path}", "success")
@@ -146,6 +201,7 @@ async def delete_item(item_id: int):
 
 def make_model(model_name: str, force: bool = False) -> None:
     """Create a SQLModel file and a corresponding router."""
+    model_name = model_name.capitalize()
     if not valid_name(model_name):
         log(f"Invalid model name: '{model_name}'.", "error")
         sys.exit(1)
@@ -158,12 +214,7 @@ def make_model(model_name: str, force: bool = False) -> None:
         log(f"Model '{model_name}' already exists. Use --force to overwrite.", "warning")
         return
 
-    template = f'''from sqlmodel import Field, SQLModel
-
-
-class {model_name.capitalize()}(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-'''
+    template = MODEL_TEMPLATE(model_name)
 
     model_path.write_text(template.strip() + "\n", encoding="utf-8")
     log(f"Created model: {model_path}", "success")
