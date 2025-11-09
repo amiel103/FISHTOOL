@@ -22,9 +22,7 @@ git clone https://github.com/amiel103/fishtool.git
 cd fishtool
 ```
 
-Optionally, you can make fishtool globally accessible:
 
-ln -s $(pwd)/fishtool.py /usr/local/bin/fishtool
 
 ⚡ Usage
 Create a new FastAPI project
@@ -60,14 +58,14 @@ Example output:
 
 📋 Registered Endpoints:
 ------------------------------------------------------------
-Router          Method     Path
-------------------------------------------------------------
-users           GET        /
-users           POST       /
-users           GET        /{item_id}
-users           PUT        /{item_id}
-users           DELETE     /{item_id}
-------------------------------------------------------------
+| Router | Method | Path        |
+|--------|--------|------------|
+| users  | GET    | /          |
+| users  | POST   | /          |
+| users  | GET    | /{item_id} |
+| users  | PUT    | /{item_id} |
+| users  | DELETE | /{item_id} |
+
 Total: 5 endpoints
 
 🔧 Recommended Run Command
