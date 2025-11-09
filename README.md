@@ -1,26 +1,26 @@
-# FISHTOOL
+# 🐟 FISHTOOL
 
+**FastAPI Interactive Shell Tool** — a developer-friendly CLI tool to quickly scaffold, manage, and inspect FastAPI projects.  
+FISHTOOL automates model and router creation, registers routes in `main.py`, and lets you list all endpoints in your project — all from the terminal.
 
-🐟 FISHTOOL
+---
 
-FastAPI Interactive Shell Tool — a developer-friendly CLI tool to quickly scaffold, manage, and inspect FastAPI projects. FISHTOOL automates model and router creation, registers routes in main.py, and lets you list all endpoints in your project — all from the terminal.
+## 🚀 Features
 
-🚀 Features
+- **Project scaffolding**: Create a standard FastAPI project structure with directories for models, routers, dependencies, and internal modules.  
+- **Model & router generation**: Generate SQLModel-based models and associated FastAPI routers automatically.  
+- **Automatic router registration**: New routers are appended to `main.py` with proper imports and `app.include_router` calls.  
+- **Endpoint listing**: List all registered routes with HTTP method and path.  
+- **Interactive CLI**: All actions are available through an easy-to-use command-line interface.
 
-Project scaffolding: Create a standard FastAPI project structure with directories for models, routers, dependencies, and internal modules.
+---
 
-Model & router generation: Generate SQLModel-based models and associated FastAPI routers automatically.
+## 📦 Installation
 
-Automatic router registration: New routers are appended to main.py with proper imports and app.include_router calls.
-
-Endpoint listing: List all registered routes with HTTP method and path.
-
-Interactive CLI: All actions are available through an easy-to-use command-line interface.
-
-📦 Installation
+```bash
 git clone https://github.com/amiel103/fishtool.git
 cd fishtool
-
+```
 
 Optionally, you can make fishtool globally accessible:
 
