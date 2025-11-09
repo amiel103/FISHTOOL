@@ -24,7 +24,7 @@ cd fishtool
 
 
 
-⚡ Usage
+## ⚡ Usage
 Create a new FastAPI project
 python fishtool.py new my_project
 
@@ -40,7 +40,7 @@ my_project/<br>
 │  ├─ models/ <br>
 │  └─ internal/ <br>
 
-Create a new model and router
+## Create a new model and router
 python fishtool.py makemodel users
 
 
@@ -50,7 +50,7 @@ Creates app/routers/users.py with CRUD endpoints.
 
 Registers the router in main.py.
 
-List all registered endpoints
+##  List all registered endpoints
 python fishtool.py list
 
 
@@ -68,7 +68,7 @@ Example output:
 
 Total: 5 endpoints
 
-🔧 Recommended Run Command
+##  🔧 Recommended Run Command
 
 Use Uvicorn to run the app from the project root:
 
