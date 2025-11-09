@@ -33,14 +33,14 @@ python fishtool.py new my_project
 
 This will generate a project structure like:
 
-my_project/
-├─ app/
-│  ├─ main.py
-│  ├─ database.py
-│  ├─ dependencies.py
-│  ├─ routers/
-│  ├─ models/
-│  └─ internal/
+my_project/<br>
+├─ app/ <br>
+│  ├─ main.py <br>
+│  ├─ database.py <br>
+│  ├─ dependencies.py <br>
+│  ├─ routers/ <br>
+│  ├─ models/ <br>
+│  └─ internal/ <br>
 
 Create a new model and router
 python fishtool.py makemodel users
