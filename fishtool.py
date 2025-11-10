@@ -221,6 +221,37 @@ def create_router(router_name: str, force: bool = False) -> None:
 
     register_router_in_main(router_name)
 
+def register_model_init( models_dir ,  model_name):
+    init_path = models_dir / "__init__.py"
+    if not init_path.exists():
+        init_path.write_text("", encoding="utf-8")
+
+    content = init_path.read_text(encoding="utf-8").strip().splitlines()
+    import_line = f"from .{model_name.lower()} import {model_name}"
+
+    # Add import line if not present
+    if import_line not in content:
+        content.append(import_line)
+
+    # Rebuild __all__ list
+    model_names = []
+    for line in content:
+        match = re.match(r"from \.\w+ import (\w+)", line)
+        if match:
+            model_names.append(match.group(1))
+
+
+    models_names_str = ", ".join(f'"{n}"' for n in model_names)
+    all_line = f"__all__ = [{models_names_str}]"
+
+    # Remove any old __all__ lines
+    content = [line for line in content if not line.strip().startswith("__all__")]
+    content.append("")  # spacer line
+    content.append(all_line)
+
+    init_path.write_text("\n".join(content).strip() + "\n", encoding="utf-8")
+    log(f"Updated models/__init__.py with '{model_name}' import.", "success")
+
 
 def make_model(model_name: str, force: bool = False) -> None:
     """Create a SQLModel file and a corresponding router."""
@@ -244,6 +275,7 @@ def make_model(model_name: str, force: bool = False) -> None:
 
     # Automatically generate router
     create_router(model_name, force=force)
+    register_model_init( models_dir ,  model_name)
 
 
 # ------------------------------
