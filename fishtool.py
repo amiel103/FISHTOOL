@@ -9,7 +9,23 @@ from textwrap import shorten
 # Project Template Definition
 # ------------------------------
 
+FISH_LOGO = """
 
+-------------------------------------------------------------------
+                THANK YOU FOR USING FISH TOOL
+-------------------------------------------------------------------                  
+                                  @@@@@@@@@@@@@@@@                    
+ (                       @@@@@@@@@@@@@@@@@@@@@@@@@@@@   @             
+ @@@                @@@@@@@@@@@@*             @@@@@   @@@@@@@         
+  @@@@@        @@@@@@@@@@                   @@@@@@  @@@@@@@   @@@     
+    @@@@@@ (@@@@@@@@                       @@@@@@  &@@@@@@  O  @@@@   
+      /@@@@@@@@@                         @@@@@@@&  @@@@@@@@   @@@@@@
+    @@@@@&  @@@@@@@@@                      @@@@@@  @@@@@@@@@@@@@@@@   
+  @@@@@         @@@@@@@@@@                  @@@@@@  @@@@@@@@@@@@      
+ @@@                &@@@@@@@@@@@@@            @@@@@   @@@@@@@         
+@                         @@@@@@@@@@@@@@@@@@@@@@@@@@@  @             
+                                  @@@@@@@@@@@@@@&*                    
+"""
 
 MAIN_TEMPLATE = '''
 from fastapi import FastAPI
@@ -33,7 +49,9 @@ async def root():
 '''
 
 
-DATABASE_TEMPLATE = '''from sqlmodel import SQLModel, create_engine
+DATABASE_TEMPLATE = '''
+
+from sqlmodel import SQLModel, create_engine
 
 sqlite_file_name = "app//database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -47,6 +65,7 @@ def create_db_and_tables():
 
 def MODEL_TEMPLATE(model_name): 
     MODEL_TEMPLATE = f'''
+    
 from sqlmodel import Field, SQLModel
 
 
@@ -70,12 +89,12 @@ from ..database import engine
 async def get_all():
     with Session(engine) as session:
         statement = select({router_name})
-        results = session.exec(statement)
+        results = session.exec(statement).all()
+        return results
 
-        return {{"message": results.all()}}
 
 
-@router.post("/", summary="Create a new {router_name}")
+@router.post("/", summary="Create a new {router_name}", status_code=status.HTTP_201_CREATED)
 async def create_item(_{router_name} : {router_name}):
     with Session(engine) as session:
         session.add(_{router_name})
@@ -88,7 +107,10 @@ async def create_item(_{router_name} : {router_name}):
 async def get_item(item_id: int):
     with Session(engine) as session:
         item = session.get({router_name}, item_id)
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{router_name} not found")
         return item
+
 
 
 @router.put("/{{item_id}}", summary="Update {router_name}")
@@ -96,6 +118,9 @@ async def update_item(_{router_name} : {router_name} , item_id: int):
     with Session(engine) as session:
 
         item = session.get({router_name}, item_id)
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{router_name} not found")
+
         for key, value in _{router_name}.model_dump(exclude_unset=True).items():
             setattr(item, key, value)
 
@@ -105,21 +130,19 @@ async def update_item(_{router_name} : {router_name} , item_id: int):
         return item
 
 
-@router.delete("/{{item_id}}", summary="Delete {router_name}")
+@router.delete("/{{item_id}}", summary="Delete {router_name}" ,status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(item_id: int):
-
-    print(item_id)
 
     with Session(engine) as session:
         item = session.get({router_name}, item_id)
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{router_name} not found")
 
         session.delete(item)
         session.commit()
         return "deleted"
 
 '''
-
-
 
     return ROUTER_TEMPLATE
 
@@ -352,6 +375,7 @@ def main() -> None:
         target_dir = Path(args.path)
         create_structure(target_dir, STRUCTURE)
         log(f"Project structure created at: {target_dir.resolve()}", "success")
+        print(FISH_LOGO)
 
     elif args.command == "makemodel":
         make_model(args.name, force=args.force)
