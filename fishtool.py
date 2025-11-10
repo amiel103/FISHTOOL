@@ -79,7 +79,7 @@ class {model_name}(SQLModel, table=True):
 def ROUTER_TEMPLATE(router_name): 
 
     ROUTER_TEMPLATE = f'''
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException , status
 from app.models.{router_name} import {router_name}
 from sqlmodel import Session, select
 router = APIRouter(prefix="/{router_name}", tags=["{router_name}"])
@@ -140,7 +140,7 @@ async def delete_item(item_id: int):
 
         session.delete(item)
         session.commit()
-        return "deleted"
+        return None
 
 '''
 
