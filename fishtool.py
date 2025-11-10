@@ -350,6 +350,10 @@ def list_endpoints() -> None:
     print("-" * 60)
     print(f"Total: {len(endpoints)} endpoints\n")
 
+
+def initialize_migrations():
+    return
+
 def initialize_project() -> None:
     """Install dependencies from requirements.txt."""
     requirements_path = Path("requirements.txt")
@@ -365,6 +369,24 @@ def initialize_project() -> None:
     else:
         log("Failed to install some dependencies. Check the error above.", "error")
 
+def serve_app() -> None:
+    """Run the FastAPI app with Uvicorn in reload mode."""
+    log("Starting FastAPI development server... 🚀", "info")
+
+    # Ensure you're in the app directory
+    app_path = Path("app/main.py")
+    if not app_path.exists():
+        log("app/main.py not found. Make sure you're in the project root.", "error")
+        sys.exit(1)
+
+    # Run the server
+    exit_code = os.system("py -m uvicorn app.main:app --reload")
+
+    if exit_code == 0:
+        log("Server stopped gracefully.", "success")
+    else:
+        log("Server exited with errors.", "error")
+
 
 # ------------------------------
 # CLI Entry Point
@@ -377,6 +399,7 @@ def main() -> None:
 
     subparsers.add_parser("list", help="List all registered endpoints")
     subparsers.add_parser("initialize", help="Install dependencies from requirements.txt")
+    subparsers.add_parser("served", help="Run the FastAPI app using Uvicorn with reload")
 
     new_parser = subparsers.add_parser("new", help="Create a new project structure")
     new_parser.add_argument("path", nargs="?", default=".", help="Base directory for project")
@@ -403,6 +426,8 @@ def main() -> None:
 
     elif args.command == "init":
         initialize_project()
+    elif args.command == "serve":
+        serve_app()
 
     else:
         parser.print_help()
