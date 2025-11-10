@@ -401,7 +401,7 @@ def main() -> None:
     elif args.command == "list":
         list_endpoints()
 
-    elif args.command == "initialize":
+    elif args.command == "init":
         initialize_project()
 
     else:
