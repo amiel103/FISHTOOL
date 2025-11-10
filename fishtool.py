@@ -227,7 +227,7 @@ def register_model_init( models_dir ,  model_name):
         init_path.write_text("", encoding="utf-8")
 
     content = init_path.read_text(encoding="utf-8").strip().splitlines()
-    import_line = f"from .{model_name.lower()} import {model_name}"
+    import_line = f"from .{model_name} import {model_name}"
 
     # Add import line if not present
     if import_line not in content:
