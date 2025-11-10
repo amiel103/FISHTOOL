@@ -350,6 +350,21 @@ def list_endpoints() -> None:
     print("-" * 60)
     print(f"Total: {len(endpoints)} endpoints\n")
 
+def initialize_project() -> None:
+    """Install dependencies from requirements.txt."""
+    requirements_path = Path("requirements.txt")
+    if not requirements_path.exists():
+        log("requirements.txt not found in the current directory.", "error")
+        sys.exit(1)
+
+    log("Installing dependencies from requirements.txt...", "info")
+    exit_code = os.system(f"{sys.executable} -m pip install -r {requirements_path}")
+    if exit_code == 0:
+        log("Dependencies installed successfully ✅", "success")
+        migrate = os.system("alembic init migrations")
+    else:
+        log("Failed to install some dependencies. Check the error above.", "error")
+
 
 # ------------------------------
 # CLI Entry Point
@@ -361,6 +376,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     subparsers.add_parser("list", help="List all registered endpoints")
+    subparsers.add_parser("initialize", help="Install dependencies from requirements.txt")
 
     new_parser = subparsers.add_parser("new", help="Create a new project structure")
     new_parser.add_argument("path", nargs="?", default=".", help="Base directory for project")
@@ -368,6 +384,8 @@ def main() -> None:
     model_parser = subparsers.add_parser("makemodel", help="Create a new model (and router)")
     model_parser.add_argument("name", help="Model name")
     model_parser.add_argument("--force", action="store_true", help="Overwrite existing files")
+
+    
 
     args = parser.parse_args()
 
@@ -382,6 +400,9 @@ def main() -> None:
 
     elif args.command == "list":
         list_endpoints()
+
+    elif args.command == "initialize":
+        initialize_project()
 
     else:
         parser.print_help()
