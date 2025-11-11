@@ -364,6 +364,26 @@ def make_model(model_name: str, force: bool = False) -> None:
     register_model_init( models_dir ,  model_name)
 
 
+def make_migrations(message) -> None:
+
+    exit_code = os.system(f"alembic revision --autogenerate -m {message}")
+
+    if exit_code == 0:
+        log("created migrations.", "success")
+    else:
+        log("exited with errors.", "error")
+
+def migrate() -> None:
+
+    exit_code = os.system(f"alembic upgrade head")
+
+    if exit_code == 0:
+        log("migrations done", "success")
+    else:
+        log("exited with errors.", "error")
+    
+
+
 # ------------------------------
 # Router Registration
 # ------------------------------
@@ -469,8 +489,6 @@ def list_endpoints() -> None:
     print(f"Total: {len(endpoints)} endpoints\n")
 
 
-def initialize_migrations():
-    return
 
 def initialize_project() -> None:
     """Install dependencies from requirements.txt."""
@@ -521,6 +539,7 @@ def main() -> None:
     subparsers.add_parser("list", help="List all registered endpoints")
     subparsers.add_parser("init", help="Install dependencies from requirements.txt")
     subparsers.add_parser("serve", help="Run the FastAPI app using Uvicorn with reload")
+    subparsers.add_parser("migrate", help="Run migrations")
 
     new_parser = subparsers.add_parser("new", help="Create a new project structure")
     new_parser.add_argument("path", nargs="?", default=".", help="Base directory for project")
@@ -528,6 +547,10 @@ def main() -> None:
     model_parser = subparsers.add_parser("makemodel", help="Create a new model (and router)")
     model_parser.add_argument("name", help="Model name")
     model_parser.add_argument("--force", action="store_true", help="Overwrite existing files")
+
+    migrations_parser = subparsers.add_parser("makemigrations", help="Create a new migrations")
+    migrations_parser.add_argument("message", help="migration message")
+
 
     
 
@@ -549,6 +572,10 @@ def main() -> None:
         initialize_project()
     elif args.command == "serve":
         serve_app()
+    elif args.command == "makemigrations":
+        make_migrations()
+    elif args.command == "migrate":
+        migrate()
 
     else:
         parser.print_help()
