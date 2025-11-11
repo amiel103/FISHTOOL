@@ -364,24 +364,56 @@ def make_model(model_name: str, force: bool = False) -> None:
     register_model_init( models_dir ,  model_name)
 
 
-def make_migrations(message) -> None:
+def ensure_alembic_setup():
+    """Ensure that Alembic and migrations are properly set up before running commands."""
+    migrations_dir = Path("migrations")
+    if not migrations_dir.exists():
+        log("⚠️ Migrations directory not found. Initializing Alembic...", "warning")
+        os.system("alembic init migrations")
+        register_sqlmodel_in_mako()
+        replace_env_file()
 
-    exit_code = os.system(f"alembic revision --autogenerate -m {message}")
+
+def make_migrations(message: str) -> None:
+    """Generate a new Alembic migration with autogeneration."""
+    ensure_alembic_setup()
+
+    if not message:
+        message = "auto migration"
+
+    log(f"📦 Creating migration: {message}", "info")
+    exit_code = os.system(f'alembic revision --autogenerate -m "{message}"')
 
     if exit_code == 0:
-        log("created migrations.", "success")
+        log("✅ Migration created successfully.", "success")
     else:
-        log("exited with errors.", "error")
+        log("❌ Migration creation failed. Check Alembic output.", "error")
 
-def migrate() -> None:
 
-    exit_code = os.system(f"alembic upgrade head")
+def migrate(revision: str = "head") -> None:
+    """Apply migrations up to the specified revision (default: head)."""
+    ensure_alembic_setup()
+
+    log(f"🚀 Applying migrations up to revision: {revision}", "info")
+    exit_code = os.system(f"alembic upgrade {revision}")
 
     if exit_code == 0:
-        log("migrations done", "success")
+        log("✅ Database migrated successfully.", "success")
     else:
-        log("exited with errors.", "error")
-    
+        log("❌ Migration failed. Check Alembic logs.", "error")
+
+
+def undo_migrate() -> None:
+    """Undo the last applied migration (downgrade by one)."""
+    ensure_alembic_setup()
+
+    log("⏪ Reverting last migration...", "info")
+    exit_code = os.system("alembic downgrade -1")
+
+    if exit_code == 0:
+        log("✅ Successfully rolled back the last migration.", "success")
+    else:
+        log("❌ Undo migration failed. Check Alembic logs.", "error")
 
 
 # ------------------------------
@@ -548,8 +580,13 @@ def main() -> None:
     model_parser.add_argument("name", help="Model name")
     model_parser.add_argument("--force", action="store_true", help="Overwrite existing files")
 
-    migrations_parser = subparsers.add_parser("makemigrations", help="Create a new migrations")
-    migrations_parser.add_argument("message", help="migration message")
+    migrations_parser = subparsers.add_parser("makemigrations", help="Create a new migration")
+    migrations_parser.add_argument("message", nargs="?", default="auto", help="Migration message")
+
+    migrate_parser = subparsers.add_parser("migrate", help="Apply database migrations")
+    migrate_parser.add_argument("--rev", default="head", help="Migration revision to upgrade to (default: head)")
+
+    subparsers.add_parser("rollback", help="Undo the last migration (downgrade -1)")
 
 
     
@@ -574,8 +611,12 @@ def main() -> None:
         serve_app()
     elif args.command == "makemigrations":
         make_migrations(args.message)
+
     elif args.command == "migrate":
-        migrate()
+        migrate(args.rev)
+
+    elif args.command == "rollback":
+        undo_migrate()
 
     else:
         parser.print_help()
