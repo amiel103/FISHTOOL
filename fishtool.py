@@ -49,6 +49,52 @@ async def root():
 '''
 
 
+ALEMBIC_ENV_TEMPLATE = '''
+from logging.config import fileConfig
+from sqlmodel import SQLModel
+
+
+# import database engine
+from app.database import engine
+
+
+# import all your models here
+from app.models import *
+
+from alembic import context
+
+config = context.config
+fileConfig(config.config_file_name)
+
+target_metadata = SQLModel.metadata
+
+def run_migrations_offline():
+    context.configure(
+        url=config.get_main_option("sqlalchemy.url"),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+def run_migrations_online():
+    connectable = engine
+    with connectable.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+
+'''
+
+
 DATABASE_TEMPLATE = '''
 
 from sqlmodel import SQLModel, create_engine
@@ -220,6 +266,46 @@ def create_router(router_name: str, force: bool = False) -> None:
     log(f"Created router: {router_path}", "success")
 
     register_router_in_main(router_name)
+
+
+def replace_env_file():
+    """Replace Alembic's env.py with the SQLModel-compatible template."""
+    env_path = Path("migrations/env.py")
+    if not env_path.exists():
+        log("⚠️ Alembic env.py not found. Did you run 'alembic init migrations'?", "warning")
+        return
+
+    env_path.write_text(ALEMBIC_ENV_TEMPLATE.strip() + "\n", encoding="utf-8")
+    log("✅ Replaced Alembic env.py with SQLModel-compatible template.", "success")
+
+def register_sqlmodel_in_mako():
+    """Ensure 'import sqlmodel' is present in Alembic's script.py.mako template."""
+    mako_path = Path("migrations/script.py.mako")
+    if not mako_path.exists():
+        log("⚠️ script.py.mako not found in migrations directory.", "warning")
+        return
+
+    content = mako_path.read_text(encoding="utf-8")
+
+    # Check if import already exists
+    if "import sqlmodel" in content:
+        log("✅ 'import sqlmodel' already registered in script.py.mako.", "info")
+        return
+
+    # Find position after 'from typing import Sequence, Union'
+    lines = content.splitlines()
+    new_lines = []
+    inserted = False
+
+    for line in lines:
+        new_lines.append(line)
+        if not inserted and line.strip().startswith("from typing import Sequence, Union"):
+            new_lines.append("import sqlmodel")
+            inserted = True
+
+    updated_content = "\n".join(new_lines)
+    mako_path.write_text(updated_content, encoding="utf-8")
+    log("🔗 Added 'import sqlmodel' to script.py.mako.", "success")
 
 def register_model_init( models_dir ,  model_name):
     init_path = models_dir / "__init__.py"
@@ -398,6 +484,9 @@ def initialize_project() -> None:
     if exit_code == 0:
         log("Dependencies installed successfully ✅", "success")
         migrate = os.system("alembic init migrations")
+        if migrate == 0 :
+            register_sqlmodel_in_mako()
+            replace_env_file()
     else:
         log("Failed to install some dependencies. Check the error above.", "error")
 
