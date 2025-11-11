@@ -573,7 +573,7 @@ def main() -> None:
     elif args.command == "serve":
         serve_app()
     elif args.command == "makemigrations":
-        make_migrations()
+        make_migrations(args.message)
     elif args.command == "migrate":
         migrate()
 
