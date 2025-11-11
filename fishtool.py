@@ -571,7 +571,6 @@ def main() -> None:
     subparsers.add_parser("list", help="List all registered endpoints")
     subparsers.add_parser("init", help="Install dependencies from requirements.txt")
     subparsers.add_parser("serve", help="Run the FastAPI app using Uvicorn with reload")
-    subparsers.add_parser("migrate", help="Run migrations")
 
     new_parser = subparsers.add_parser("new", help="Create a new project structure")
     new_parser.add_argument("path", nargs="?", default=".", help="Base directory for project")
