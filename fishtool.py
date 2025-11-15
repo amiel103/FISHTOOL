@@ -10,21 +10,18 @@ from textwrap import shorten
 # ------------------------------
 
 FISH_LOGO = """
-
--------------------------------------------------------------------
-                THANK YOU FOR USING FISH TOOL
--------------------------------------------------------------------                  
+              
                                   @@@@@@@@@@@@@@@@                    
- (                       @@@@@@@@@@@@@@@@@@@@@@@@@@@@   @             
  @@@                @@@@@@@@@@@@*             @@@@@   @@@@@@@         
   @@@@@        @@@@@@@@@@                   @@@@@@  @@@@@@@   @@@     
     @@@@@@ (@@@@@@@@                       @@@@@@  &@@@@@@  O  @@@@   
-      /@@@@@@@@@                         @@@@@@@&  @@@@@@@@   @@@@@@
     @@@@@&  @@@@@@@@@                      @@@@@@  @@@@@@@@@@@@@@@@   
   @@@@@         @@@@@@@@@@                  @@@@@@  @@@@@@@@@@@@      
  @@@                &@@@@@@@@@@@@@            @@@@@   @@@@@@@         
-@                         @@@@@@@@@@@@@@@@@@@@@@@@@@@  @             
-                                  @@@@@@@@@@@@@@&*                    
+@                         @@@@@@@@@@@@@@@@@@@@@@@@@@@  @   
+-------------------------------------------------------------------
+                THANK YOU FOR USING FISH TOOL
+-------------------------------------------------------------------                             
 """
 
 MAIN_TEMPLATE = '''
@@ -597,28 +594,38 @@ def main() -> None:
         create_structure(target_dir, STRUCTURE)
         log(f"Project structure created at: {target_dir.resolve()}", "success")
         print(FISH_LOGO)
+        return
 
-    elif args.command == "makemodel":
+    if args.command == "makemodel":
         make_model(args.name, force=args.force)
+        return
 
-    elif args.command == "list":
+    if args.command == "list":
         list_endpoints()
+        return
 
-    elif args.command == "init":
+    if args.command == "init":
         initialize_project()
-    elif args.command == "serve":
+        return
+
+    if args.command == "serve":
         serve_app()
-    elif args.command == "makemigrations":
+        return
+
+    if args.command == "makemigrations":
         make_migrations(args.message)
+        return
 
-    elif args.command == "migrate":
+    if args.command == "migrate":
         migrate(args.rev)
+        return
 
-    elif args.command == "rollback":
+    if args.command == "rollback":
         undo_migrate()
+        return
 
-    else:
-        parser.print_help()
+    parser.print_help()
+        
 
 
 if __name__ == "__main__":
