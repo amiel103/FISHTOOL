@@ -10,18 +10,10 @@ from textwrap import shorten
 # ------------------------------
 
 FISH_LOGO = """
-              
-                                  @@@@@@@@@@@@@@@@                    
- @@@                @@@@@@@@@@@@*             @@@@@   @@@@@@@         
-  @@@@@        @@@@@@@@@@                   @@@@@@  @@@@@@@   @@@     
-    @@@@@@ (@@@@@@@@                       @@@@@@  &@@@@@@  O  @@@@   
-    @@@@@&  @@@@@@@@@                      @@@@@@  @@@@@@@@@@@@@@@@   
-  @@@@@         @@@@@@@@@@                  @@@@@@  @@@@@@@@@@@@      
- @@@                &@@@@@@@@@@@@@            @@@@@   @@@@@@@         
-@                         @@@@@@@@@@@@@@@@@@@@@@@@@@@  @   
--------------------------------------------------------------------
-                THANK YOU FOR USING FISH TOOL
--------------------------------------------------------------------                             
+-----------------------------
+THANK YOU FOR USING FISH TOOL
+-----------------------------   
+          ><(((º>                         
 """
 
 MAIN_TEMPLATE = '''
@@ -118,6 +110,20 @@ class {model_name}(SQLModel, table=True):
 
     return MODEL_TEMPLATE
 
+def BLANK_ROUTER_TEMPLATE(router_name) :
+    BLANK_ROUTER_TEMPLATE = f'''
+
+from fastapi import APIRouter, HTTPException , status
+
+from sqlmodel import Session, select
+
+router = APIRouter(prefix="/{router_name}", tags=["{router_name}"])
+@router.get("/")
+def read_root():
+    return {{"Hello": "World"}}
+'''
+    return BLANK_ROUTER_TEMPLATE
+
 
 def ROUTER_TEMPLATE(router_name): 
 
@@ -125,6 +131,7 @@ def ROUTER_TEMPLATE(router_name):
 from fastapi import APIRouter, HTTPException , status
 from app.models.{router_name} import {router_name}
 from sqlmodel import Session, select
+
 router = APIRouter(prefix="/{router_name}", tags=["{router_name}"])
 from ..database import engine
 
@@ -243,7 +250,10 @@ def create_structure(base_path: Path, structure: dict) -> None:
             log(f"Created file: {path.relative_to(base_path.parent)}", "success")
 
 
-def create_router(router_name: str, force: bool = False) -> None:
+def create_router(router_name: str, force: bool = False , template= 'Router') -> None:
+
+
+
     """Generate a FastAPI router file."""
     if not valid_name(router_name):
         log(f"Invalid router name: '{router_name}'.", "error")
@@ -257,9 +267,13 @@ def create_router(router_name: str, force: bool = False) -> None:
         log(f"Router '{router_name}' already exists. Use --force to overwrite.", "warning")
         return
 
-    template = ROUTER_TEMPLATE(router_name)
 
-    router_path.write_text(template.strip() + "\n", encoding="utf-8")
+    if template == 'blank':
+        TEMPLATE =BLANK_ROUTER_TEMPLATE(router_name)
+    else:
+        TEMPLATE = ROUTER_TEMPLATE(router_name)
+
+    router_path.write_text(TEMPLATE.strip() + "\n", encoding="utf-8")
     log(f"Created router: {router_path}", "success")
 
     register_router_in_main(router_name)
@@ -385,6 +399,86 @@ def make_migrations(message: str) -> None:
         log("✅ Migration created successfully.", "success")
     else:
         log("❌ Migration creation failed. Check Alembic output.", "error")
+        return
+
+
+    # test here
+    import glob
+
+    from alembic.config import Config
+    alembic_cfg = Config("alembic.ini")
+    script_location = alembic_cfg.get_main_option("script_location")
+    versions_dir = os.path.join(script_location, "versions")
+
+    # Get newest migration file
+    migration_files = sorted(
+        glob.glob(os.path.join(versions_dir, "*.py")),
+        key=os.path.getmtime
+    )
+
+    if not migration_files:
+        log("⚠️ No migration files found.", "warning")
+        return None
+
+    newest_migration = os.path.basename(migration_files[-1])
+
+    # Write migration name to txt file
+    txt_path = os.path.join(script_location, "latest_migration.txt")
+    with open(txt_path, "w") as f:
+        f.write(newest_migration)
+
+    log(f"📝 Saved migration name to {txt_path}", "info")
+    find_and_replace_null_defaults()
+
+
+
+def find_and_replace_null_defaults():
+    # migrations\latest_migration.txt
+    file_path = "migrations\latest_migration.txt" 
+
+    latest_migration = ""
+
+    try:
+        # Open the file in read mode ('r') using a 'with' statement
+        with open(file_path, 'r') as file:
+            # Read the entire content of the file
+            latest_migration = file.read()
+
+
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' was not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    # testing here
+
+    latest_migration = "migrations/versions/"+ latest_migration
+
+
+    print(latest_migration)
+    with open(latest_migration, 'r') as file:
+        # print('reading file')
+        lines = file.readlines()
+
+
+    # Modify lines
+    for i, line in enumerate(lines):
+        if 'nullable=False' in line and  "server_default" not in line:
+
+            matches = re.findall(r"'(.*?)'", line)
+
+            input_text = "table "+ matches[0] + ' in column ' + matches[1] + " cant be null, enter default value: "
+            server_default = input(input_text)
+
+            # aaa = f"op.add_column('{matches[0]}', sa.Column('{matches[1]}', sqlmodel.sql.sqltypes.AutoString(), nullable=False, server_default='{server_default}'))"
+            lines[i] = lines[i][0:-3] + f",server_default='{server_default}'))"
+
+    with open(latest_migration, 'w') as file:
+        file.writelines(lines)
+   
+
+    
+  
 
 
 def migrate(revision: str = "head") -> None:
@@ -396,8 +490,8 @@ def migrate(revision: str = "head") -> None:
 
     if exit_code == 0:
         log("✅ Database migrated successfully.", "success")
-    else:
-        log("❌ Migration failed. Check Alembic logs.", "error")
+        return
+    log("❌ Migration failed. Check Alembic logs.", "error")
 
 
 def undo_migrate() -> None:
@@ -409,8 +503,9 @@ def undo_migrate() -> None:
 
     if exit_code == 0:
         log("✅ Successfully rolled back the last migration.", "success")
-    else:
-        log("❌ Undo migration failed. Check Alembic logs.", "error")
+        return
+    
+    log("❌ Undo migration failed. Check Alembic logs.", "error")
 
 
 # ------------------------------
@@ -534,6 +629,7 @@ def initialize_project() -> None:
         if migrate == 0 :
             register_sqlmodel_in_mako()
             replace_env_file()
+
     else:
         log("Failed to install some dependencies. Check the error above.", "error")
 
@@ -552,8 +648,9 @@ def serve_app() -> None:
 
     if exit_code == 0:
         log("Server stopped gracefully.", "success")
-    else:
-        log("Server exited with errors.", "error")
+        return
+    
+    log("Server exited with errors.", "error")
 
 
 # ------------------------------
@@ -568,6 +665,7 @@ def main() -> None:
     subparsers.add_parser("list", help="List all registered endpoints")
     subparsers.add_parser("init", help="Install dependencies from requirements.txt")
     subparsers.add_parser("serve", help="Run the FastAPI app using Uvicorn with reload")
+    subparsers.add_parser("rollback", help="Undo the last migration (downgrade -1)")
 
     new_parser = subparsers.add_parser("new", help="Create a new project structure")
     new_parser.add_argument("path", nargs="?", default=".", help="Base directory for project")
@@ -576,13 +674,15 @@ def main() -> None:
     model_parser.add_argument("name", help="Model name")
     model_parser.add_argument("--force", action="store_true", help="Overwrite existing files")
 
+    router_parser = subparsers.add_parser("makerouter", help="Create a new router")
+    router_parser.add_argument("name", help="Router name")
+
     migrations_parser = subparsers.add_parser("makemigrations", help="Create a new migration")
     migrations_parser.add_argument("message", nargs="?", default="auto", help="Migration message")
 
     migrate_parser = subparsers.add_parser("migrate", help="Apply database migrations")
     migrate_parser.add_argument("--rev", default="head", help="Migration revision to upgrade to (default: head)")
 
-    subparsers.add_parser("rollback", help="Undo the last migration (downgrade -1)")
 
 
     
@@ -598,6 +698,10 @@ def main() -> None:
 
     if args.command == "makemodel":
         make_model(args.name, force=args.force)
+        return
+    
+    if args.command == "makerouter":
+        create_router(args.name, template='blank')
         return
 
     if args.command == "list":
