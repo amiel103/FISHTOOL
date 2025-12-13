@@ -106,4 +106,4 @@ Interactive REPL for testing endpoints directly.
 
 📜 License
 
-MIT License © 2025 Amiel Ryan James M. Nayve
+MIT License © 2025 Amiel
