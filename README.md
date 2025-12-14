@@ -124,7 +124,7 @@ Ideal for small teams, solo developers, or learning FastAPI.
 Easy to extend: add custom router templates, models, or CLI commands.
 
 
-##🐟 Final Words
+## 🐟 Final Words
 This tool exists to remove friction, not replace understanding.
 Use it to move fast — and refactor later.
 
