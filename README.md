@@ -113,7 +113,7 @@ Downgrades the database by one revision.
 
 
 
-🐠 Why FISHTOOL?
+##🐠 Why FISHTOOL?
 
 Saves time by automating boilerplate code.
 
@@ -123,6 +123,8 @@ Ideal for small teams, solo developers, or learning FastAPI.
 
 Easy to extend: add custom router templates, models, or CLI commands.
 
+
+##🐟 Final Words
 This tool exists to remove friction, not replace understanding.
 Use it to move fast — and refactor later.
 
