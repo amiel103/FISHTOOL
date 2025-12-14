@@ -13,6 +13,8 @@ FISHTOOL automates model and router creation, registers routes in `main.py`, and
 - **Endpoint listing**: List all registered routes with HTTP method and path.  
 - **Interactive CLI**: All actions are available through an easy-to-use command-line interface.
 
+
+Designed for speed, consistency, and zero boilerplate fatigue.
 ---
 
 ## 📦 Installation
@@ -20,6 +22,7 @@ FISHTOOL automates model and router creation, registers routes in `main.py`, and
 ```bash
 git clone https://github.com/amiel103/fishtool.git
 cd fishtool
+py fishtool.py init
 ```
 
 
@@ -74,15 +77,41 @@ Example output:
 
 Total: 5 endpoints
 
-##  🔧 Recommended Run Command
+##  🔧 Run Command
 
-Use Uvicorn to run the app from the project root:
 
 ```bash
-uvicorn app.main:app --reload
+py fishtool.py serve
 ```
 
-Avoid running python app/main.py directly — FISHTOOL ensures imports work properly when run from the project root.
+
+## 📦 Create Database Migrations
+```bash
+py fishtool.py makemigrations "add user table"
+```
+
+Uses Alembic autogeneration
+
+Detects non-nullable columns
+
+Prompts for default values if required
+
+Stores latest migration reference automatically
+
+## 🚀 Apply Migrations
+```bash
+py fishtool.py migrate 
+```
+
+## ⏪ Rollback Last Migration
+```bash
+py fishtool.py rollback 
+```
+Downgrades the database by one revision.
+
+
+
+
 
 🐠 Why FISHTOOL?
 
@@ -94,15 +123,9 @@ Ideal for small teams, solo developers, or learning FastAPI.
 
 Easy to extend: add custom router templates, models, or CLI commands.
 
-💡 Future Ideas
+This tool exists to remove friction, not replace understanding.
+Use it to move fast — and refactor later.
 
-Support for Pydantic-only models (non-SQLModel).
-
-Customizable templates for routers and models.
-
-Integration with Alembic migrations.
-
-Interactive REPL for testing endpoints directly.
 
 📜 License
 
