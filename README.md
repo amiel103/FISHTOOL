@@ -113,7 +113,7 @@ Downgrades the database by one revision.
 
 
 
-##🐠 Why FISHTOOL?
+## 🐠 Why FISHTOOL?
 
 Saves time by automating boilerplate code.
 
