@@ -471,7 +471,8 @@ def find_and_replace_null_defaults():
             server_default = input(input_text)
 
             # aaa = f"op.add_column('{matches[0]}', sa.Column('{matches[1]}', sqlmodel.sql.sqltypes.AutoString(), nullable=False, server_default='{server_default}'))"
-            lines[i] = lines[i][0:-3] + f",server_default='{server_default}'))"
+            lines[i] = lines[i][0:-3] + f",server_default='{server_default}')) \\n"
+
 
     with open(latest_migration, 'w') as file:
         file.writelines(lines)
@@ -622,6 +623,8 @@ def initialize_project() -> None:
         sys.exit(1)
 
     log("Installing dependencies from requirements.txt...", "info")
+    log('-----------------------', "info")
+    print(f"{sys.executable} -m pip install -r {requirements_path}")
     exit_code = os.system(f"{sys.executable} -m pip install -r {requirements_path}")
     if exit_code == 0:
         log("Dependencies installed successfully ✅", "success")
@@ -644,7 +647,7 @@ def serve_app() -> None:
         sys.exit(1)
 
     # Run the server
-    exit_code = os.system("py -m uvicorn app.main:app --reload")
+    exit_code = os.system(f"{sys.executable} -m uvicorn app.main:app --reload")
 
     if exit_code == 0:
         log("Server stopped gracefully.", "success")
