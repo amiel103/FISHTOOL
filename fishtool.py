@@ -625,7 +625,7 @@ def initialize_project() -> None:
     log("Installing dependencies from requirements.txt...", "info")
     log('-----------------------', "info")
     print(f"{sys.executable} -m pip install -r {requirements_path}")
-    exit_code = os.system(f"{sys.executable} -m pip install -r {requirements_path}")
+    exit_code = os.system('"'+str(sys.executable)+'"' +" -m pip install -r "+str(requirements_path)+"")
     if exit_code == 0:
         log("Dependencies installed successfully ✅", "success")
         migrate = os.system("alembic init migrations")
@@ -647,7 +647,7 @@ def serve_app() -> None:
         sys.exit(1)
 
     # Run the server
-    exit_code = os.system(f"{sys.executable} -m uvicorn app.main:app --reload")
+    exit_code = os.system('"'+str(sys.executable)+'"' +" -m uvicorn app.main:app --reload")
 
     if exit_code == 0:
         log("Server stopped gracefully.", "success")
