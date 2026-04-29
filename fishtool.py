@@ -6,7 +6,9 @@ import re
 from textwrap import shorten
 
 # ------------------------------
-# Project Template Definition
+# VISIT FOR DOCS
+# https://github.com/amiel103/FISHTOOL
+# If you find this useful, consider giving it a star!
 # ------------------------------
 
 FISH_LOGO = """
